@@ -1,0 +1,66 @@
+pipeline {
+  agent any
+
+  environment {
+    AWS_REGION = 'ap-southeast-2'
+    AWS_ACCOUNT = '715841372170' // replace with your AWS account
+    ECR_REPO_NAME = 'sample-app-repo'
+    ECR_URL = "${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+        script {
+          def date = sh(script: "date +%Y%m%d-%H%M%S", returnStdout: true).trim()
+          def commit = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+          env.IMAGE_TAG = "${date}-${commit}"
+        }
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        dir('app') {
+          sh "docker build -t ${ECR_REPO_NAME}:${IMAGE_TAG} ."
+        }
+      }
+    }
+
+    stage('Login to ECR & Push') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'aws-creds-id', usernameVariable: 'AWS_ID', passwordVariable: 'AWS_SECRET')]) {
+          sh """
+            export AWS_ACCESS_KEY_ID=$AWS_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET
+            aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
+            docker tag ${ECR_REPO_NAME}:${IMAGE_TAG} ${ECR_URL}:${IMAGE_TAG}
+            docker push ${ECR_URL}:${IMAGE_TAG}
+          """
+        }
+      }
+    }
+
+    stage('Trigger EventBridge for Lambda') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'aws-creds-id', usernameVariable: 'AWS_ID', passwordVariable: 'AWS_SECRET')]) {
+          sh """
+            export AWS_ACCESS_KEY_ID=$AWS_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET
+            aws events put-events --entries '[{
+                "Source": "custom.jenkins",
+                "DetailType": "ECR Image Push",
+                "Detail": "{\\"repository\\": \\"${ECR_REPO_NAME}\\", \\"imageTag\\": \\"${IMAGE_TAG}\\"}"
+              }]'
+            """
+        }
+      }
+    }
+  }
+
+  post {
+    success { echo " Docker image pushed and EventBridge triggered: ${ECR_URL}:${IMAGE_TAG}" }
+    failure { echo " Build failed" }
+  }
+}
