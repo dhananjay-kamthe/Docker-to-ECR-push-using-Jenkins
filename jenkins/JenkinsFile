@@ -2,8 +2,8 @@ pipeline {
   agent any
 
   environment {
-    AWS_REGION = 'ap-southeast-2'
-    AWS_ACCOUNT = '715841372170' // replace with your AWS account
+    AWS_REGION = 'eu-north-1'
+    AWS_ACCOUNT = '715841323905' // replace with your AWS account
     ECR_REPO_NAME = 'sample-app-repo'
     ECR_URL = "${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}"
   }
