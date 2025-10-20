@@ -244,29 +244,39 @@ Target: Lambda function `ecr-postprocessor`
 ## Screenshots
 
  🖼️ Jenkins Configuration
- <p align="center"> <img src="img/jenkins project config.png" alt="Jenkins Configuration" width="500"/> </p>
+ <p align="center"> <img src="img/jenkins pipeline configuration.png" alt="Jenkins Configuration" width="500"/> </p>
 
 
 🖼️ Jenkins Build Success
- <p align="center"> <img src="img/jenkins success.jpg" alt="Jenkins Build Success" width="800"/> </p>
+ <p align="center"> <img src="img/jenkins build success.png" alt="Jenkins Build Success" width="800"/> </p>
 
 
 🖼️ ECR Image Uploaded
- <p align="center"> <img src="img/ECR.jpg" alt="ECR Image Uploaded" width="800"/> </p>
+ <p align="center"> <img src="img/ecr image push.png" alt="ECR Image Uploaded" width="800"/> </p>
+
  
 
 🖼️ Lambda Invocation Log
- <p align="center"> <img src="img/Cloudwatch.jpg" alt="Lambda Invocation Log" width="800"/> </p>
+ <p align="center"> <img src="img/cloudwatch logs.png" alt="Lambda Invocation Log" width="800"/> </p>
 
 
 🖼️ SNS Email Notification
- <p align="center"> <img src="img/gmail notification.jpg" alt="SNS Email Notification" width="800"/> </p>
+ <p align="center"> <img src="img/sns topic.png" alt="SNS Email Notification" width="800"/> </p>
 
 
  🖼️ DynamoDB Table Log
- <p align="center"> <img src="img/dynamodb.jpg" alt="DynamoDB Table Log" width="800"/> </p>
+ <p align="center"> <img src="img/Dynamodb table.png" alt="DynamoDB Table Log" width="800"/> </p>
 
+ 🖼️ IAM Roles
+ <p align="center"> <img src="img/IAM roles.png" alt="iam roles" width="800"/> </p>
 
+ 🖼️ Event Bridge
+ <p align="center"> <img src="img/event bridge.png" alt="event bridge" width="800"/> </p>
+
+ 🖼️ Lambda
+ <p align="center"> <img src="img/lambda.png" alt="lambda" width="800"/> </p>
+
+ 
 ## Section 2 — Terraform Deployment
 Directory Structure:
 ```
