@@ -27,7 +27,6 @@ When you push code to GitHub:
 📧 SNS sends a notification email
 
 🧱 System Architecture
----
 sequenceDiagram
   participant Developer
   participant GitHub
@@ -46,10 +45,9 @@ sequenceDiagram
   EventBridge->>Lambda: Trigger Lambda
   Lambda->>DynamoDB: Store metadata
   Lambda->>SNS: Send notification
----
+
 🧩 SECTION 1 — Manual Setup (Without Terraform)
-🧭 Workflow Summary 
----
+🧭 Workflow Summary
 Step	Task	Description
 1️⃣	Create ECR Repository	Stores Docker images
 2️⃣	Setup App Code	Node.js sample application
@@ -59,7 +57,7 @@ Step	Task	Description
 6️⃣	Create EventBridge Rule	Triggers Lambda
 7️⃣	Verify Pipeline	Validate end-to-end flow
 1️⃣ Create an Amazon ECR Repository
----
+
 Steps:
 
 Go to AWS Console → ECR → Create repository
@@ -71,12 +69,11 @@ Tag mutability: Mutable
 (Optional) Enable scan on push
 
 Repository URI Example:
----
+
 123456789012.dkr.ecr.ap-south-1.amazonaws.com/sample-app-repo
----
+
 2️⃣ Application Source Code
 Folder Structure
----
 auto-ecr-pipeline/
 ├── app/
 │   ├── Dockerfile
@@ -84,17 +81,15 @@ auto-ecr-pipeline/
 │   └── index.js
 └── jenkins/
     └── Jenkinsfile
----
+
 app/index.js
----
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 app.get('/', (_, res) => res.json({ msg: 'Hello from AWS CI/CD pipeline!' }));
 app.listen(port, () => console.log(`Server running on port ${port}`));
----
+
 app/package.json
----
 {
   "name": "docker-ci-app",
   "version": "1.0.0",
@@ -102,9 +97,8 @@ app/package.json
   "scripts": { "start": "node index.js" },
   "dependencies": { "express": "^4.18.2" }
 }
----
+
 app/Dockerfile
----
 FROM node:18-alpine
 WORKDIR /usr/src/app
 COPY package*.json ./
@@ -112,7 +106,7 @@ RUN npm install --only=production
 COPY . .
 EXPOSE 3000
 CMD ["npm", "start"]
----
+
 3️⃣ Jenkins Configuration
 🔹 Required Plugins
 
@@ -137,7 +131,6 @@ Username: AWS_ACCESS_KEY_ID
 Password: AWS_SECRET_ACCESS_KEY
 
 🔹 Jenkinsfile
----
 pipeline {
   agent any
 
@@ -188,15 +181,16 @@ pipeline {
     failure { echo "❌ Build failed." }
   }
 }
----
+
 4️⃣ Configure GitHub Webhook
 
 Go to Repo → Settings → Webhooks → Add Webhook
 
 Payload URL:
----
+
 http://<jenkins-server-ip>:8080/github-webhook/
----
+
+
 Content type: application/json
 
 Event: “Just the push event”
@@ -209,8 +203,6 @@ Runtime: Python 3.10
 Function Name: ecr-postprocessor
 
 lambda/ecr_postprocessor.py
----
-
 import json, os, boto3
 from datetime import datetime
 
@@ -238,13 +230,13 @@ def lambda_handler(event, context):
         Subject="ECR Image Push Notification"
     )
     return {'status': 'ok'}
----
+
 
 Environment Variables
----
+
 DDB_TABLE = sample-app-image-log
 SNS_ARN   = arn:aws:sns:ap-south-1:123456789012:sample-app-topic
----
+
 6️⃣ DynamoDB & SNS Setup
 
 DynamoDB Table
@@ -262,12 +254,12 @@ Add an email subscription and confirm via your inbox.
 7️⃣ EventBridge Rule
 
 Event pattern:
----
+
 {
   "source": ["custom.jenkins"],
   "detail-type": ["ECR Image Push"]
 }
----
+
 
 Target: Lambda Function (ecr-postprocessor)
 
@@ -285,21 +277,18 @@ SNS sends notification email 🎉
 
 🧩 SECTION 2 — Terraform Deployment
 Directory Structure
----
 terraform/
 ├── main.tf
 ├── variables.tf
 ├── outputs.tf
 └── lambda/
     └── ecr_postprocessor.py
----
 
 Deploy Terraform
----
 cd terraform
 terraform init
 terraform apply -auto-approve
----
+
 
 Terraform Outputs:
 
@@ -312,9 +301,8 @@ SNS Topic ARN
 Use these in your Jenkins configuration.
 
 🧹 Clean Up Resources
----
 terraform destroy -auto-approve
----
+
 ✨ Benefits
 Feature	Benefit
 Fully Automated	End-to-end CI/CD pipeline
